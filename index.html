@@ -26,7 +26,6 @@
         const auth = getAuth(app);
         const appId = 'the-one-community-v1';
 
-        // 48 Slots အတိအကျ သေချာအောင် ပြန်သတ်မှတ်
         const initialTeams = Array.from({length: 48}, (_, i) => ({ id: i, name: "" }));
 
         window.state = {
@@ -64,7 +63,6 @@
                     onSnapshot(getTournamentDoc(), (docSnap) => {
                         if (docSnap.exists()) {
                             const data = docSnap.data();
-                            // အကယ်၍ Cloud မှာ data မရှိသေးရင် အသစ်မဆောက်ခင် 48 slots ရှိနေတာ သေချာအောင်လုပ်
                             if (data.teams && data.teams.length < 48) {
                                 const mergedTeams = [...window.state.teams];
                                 data.teams.forEach((t, idx) => { mergedTeams[idx] = t; });
@@ -98,8 +96,11 @@
             const labels = ['Fixtures', 'Table', 'Knockout', 'POTR', 'Admin'];
             document.getElementById('nav-bar').innerHTML = tabs.map((t, i) => {
                 if (t === 'setup' && !window.state.isAdmin) return '';
-                return `<button onclick="changeTab('${t}')" class="flex flex-col items-center gap-1 flex-1 transition-all ${window.state.activeTab === t ? 'text-blue-500 scale-110' : 'text-zinc-500'}">
-                    <span class="text-[8px] font-bold uppercase tracking-tighter">${labels[i]}</span>
+                const isActive = window.state.activeTab === t;
+                return `
+                <button onclick="changeTab('${t}')" class="flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all relative ${isActive ? 'text-blue-500 scale-110' : 'text-zinc-500'}">
+                    ${isActive ? '<div class="absolute -top-1 w-8 h-1 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,1)]"></div>' : ''}
+                    <span class="text-[11px] font-black uppercase tracking-widest">${labels[i]}</span>
                 </button>`;
             }).join('');
         };
@@ -130,30 +131,27 @@
             }).sort((a,b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
 
             container.innerHTML = `
-                <div class="bg-zinc-900/40 rounded-3xl border border-white/5 overflow-hidden overflow-x-auto no-scrollbar">
+                <div class="bg-zinc-900/40 rounded-[2rem] border border-white/5 overflow-hidden overflow-x-auto no-scrollbar">
                     <table class="w-full text-left min-w-[500px]">
                         <thead>
                             <tr class="text-[8px] uppercase font-black text-zinc-500 border-b border-white/5 bg-white/[0.02]">
-                                <th class="p-4 pl-6">Pos Manager</th>
-                                <th class="p-4 text-center">P</th><th class="p-4 text-center">W</th><th class="p-4 text-center">D</th>
-                                <th class="p-4 text-center">L</th><th class="p-4 text-center">GF</th><th class="p-4 text-center">GA</th><th class="p-4 text-center">GD</th><th class="p-4 text-center text-blue-500">Pts</th>
+                                <th class="p-5 pl-8">Pos Manager</th>
+                                <th class="p-5 text-center">P</th><th class="p-5 text-center">W</th><th class="p-5 text-center">D</th>
+                                <th class="p-5 text-center">L</th><th class="p-5 text-center text-blue-500">Pts</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${stats.map((s,i) => `
                                 <tr class="border-b border-white/[0.02] ${i < 8 ? 'bg-green-500/5' : (i < 24 ? 'bg-blue-500/5' : '')}">
-                                    <td class="p-4 pl-6 flex items-center gap-3">
-                                        <span class="text-[9px] font-black ${i < 8 ? 'text-green-500' : (i < 24 ? 'text-blue-500' : 'opacity-20')}">${i+1}</span>
-                                        <span class="text-xs font-bold text-zinc-200 truncate max-w-[100px]">${s.name}</span>
+                                    <td class="p-4 pl-8 flex items-center gap-3">
+                                        <span class="text-[10px] font-black ${i < 8 ? 'text-green-500' : (i < 24 ? 'text-blue-500' : 'opacity-20')}">${i+1}</span>
+                                        <span class="text-xs font-bold text-zinc-200 truncate max-w-[120px]">${s.name}</span>
                                     </td>
-                                    <td class="p-4 text-center text-zinc-400 text-[10px]">${s.p}</td>
-                                    <td class="p-4 text-center text-zinc-400 text-[10px]">${s.w}</td>
-                                    <td class="p-4 text-center text-zinc-400 text-[10px]">${s.d}</td>
-                                    <td class="p-4 text-center text-zinc-400 text-[10px]">${s.l}</td>
-                                    <td class="p-4 text-center text-zinc-500 text-[10px]">${s.gf}</td>
-                                    <td class="p-4 text-center text-zinc-500 text-[10px]">${s.ga}</td>
-                                    <td class="p-4 text-center font-bold text-[10px] ${s.gd>0?'text-emerald-500':s.gd<0?'text-red-400':'text-zinc-500'}">${s.gd}</td>
-                                    <td class="p-4 text-center font-black text-blue-500 text-sm">${s.pts}</td>
+                                    <td class="p-4 text-center text-zinc-400 text-[11px]">${s.p}</td>
+                                    <td class="p-4 text-center text-zinc-400 text-[11px]">${s.w}</td>
+                                    <td class="p-4 text-center text-zinc-400 text-[11px]">${s.d}</td>
+                                    <td class="p-4 text-center text-zinc-400 text-[11px]">${s.l}</td>
+                                    <td class="p-4 text-center font-black text-blue-500 text-base">${s.pts}</td>
                                 </tr>`).join('')}
                         </tbody>
                     </table>
@@ -162,7 +160,6 @@
         };
 
         const renderSetup = (container) => {
-            // 48 ထိ အတိအကျ ရှိမရှိ စစ်ဆေးပြီး လိုအပ်ရင် ဖြည့်ပေး
             if (window.state.teams.length < 48) {
                 for (let i = window.state.teams.length; i < 48; i++) {
                     window.state.teams.push({ id: i, name: "" });
@@ -218,17 +215,26 @@
                     ${r.matches.map((m, i) => {
                         const hT = window.state.teams.find(t => t.id === m.h) || { name: 'TBA' };
                         const aT = window.state.teams.find(t => t.id === m.a) || { name: 'TBA' };
+                        
+                        let hColor = 'text-white';
+                        let aColor = 'text-white';
+                        if (m.hs !== null && m.as !== null) {
+                            if (m.hs > m.as) { hColor = 'text-emerald-500'; aColor = 'text-red-500'; }
+                            else if (m.as > m.hs) { aColor = 'text-emerald-500'; hColor = 'text-red-500'; }
+                            else { hColor = 'text-yellow-500'; aColor = 'text-yellow-500'; }
+                        }
+
                         return `
                         <div class="bg-zinc-900/40 p-3 rounded-2xl border border-white/5 flex items-center gap-3">
-                            <div class="flex-1 text-right font-bold text-[11px] truncate ${m.hs > m.as ? 'text-white' : 'text-zinc-400'}">${hT.name}</div>
+                            <div class="flex-1 text-right font-bold text-[11px] truncate ${hColor}">${hT.name}</div>
                             <div class="flex gap-1.5 items-center">
                                 <input type="number" value="${m.hs ?? ''}" onchange="updateScore(${rIdx}, ${i}, 'hs', this.value)" ${!window.state.isAdmin?'readonly':''} 
-                                    class="w-8 h-8 bg-black rounded-lg text-center font-black border border-white/10 outline-none">
+                                    class="w-8 h-8 bg-black rounded-lg text-center font-black border border-white/10 outline-none ${hColor}">
                                 <span class="opacity-10 text-[6px] font-black">VS</span>
                                 <input type="number" value="${m.as ?? ''}" onchange="updateScore(${rIdx}, ${i}, 'as', this.value)" ${!window.state.isAdmin?'readonly':''} 
-                                    class="w-8 h-8 bg-black rounded-lg text-center font-black border border-white/10 outline-none">
+                                    class="w-8 h-8 bg-black rounded-lg text-center font-black border border-white/10 outline-none ${aColor}">
                             </div>
-                            <div class="flex-1 text-left font-bold text-[11px] truncate ${m.as > m.hs ? 'text-white' : 'text-zinc-400'}">${aT.name}</div>
+                            <div class="flex-1 text-left font-bold text-[11px] truncate ${aColor}">${aT.name}</div>
                         </div>`;
                     }).join('')}
                 </div>
@@ -243,29 +249,29 @@
                     <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
                     <p class="text-[9px] font-black text-blue-500 uppercase tracking-[0.3em] mb-8">Matchday ${window.state.currentRound} MVP</p>
                     
-                    <div class="relative w-40 h-40 mx-auto mb-8">
+                    <div class="relative w-44 h-44 mx-auto mb-8">
                         <div class="w-full h-full rounded-full bg-blue-600/5 border-2 border-white/5 overflow-hidden flex items-center justify-center p-1">
                             <div class="w-full h-full rounded-full overflow-hidden bg-zinc-800">
                                 ${rd.img ? `<img src="${rd.img}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center text-4xl opacity-20">🏆</div>`}
                             </div>
                         </div>
                         ${window.state.isAdmin ? `
-                            <label class="absolute bottom-1 right-1 w-10 h-10 bg-blue-600 rounded-full border-4 border-black flex items-center justify-center cursor-pointer hover:scale-110 active:scale-90 transition-all shadow-lg">
+                            <label class="absolute bottom-1 right-1 w-12 h-12 bg-blue-600 rounded-full border-4 border-black flex items-center justify-center cursor-pointer hover:scale-110 active:scale-90 transition-all shadow-xl">
                                 <span class="text-xs">📷</span> <input type="file" class="hidden" accept="image/*" onchange="handleImageUpload(event)">
                             </label>` : ''}
                     </div>
 
                     <input type="text" placeholder="Manager Name" value="${rd.name}" onchange="updatePOTR('name', this.value)" ${!window.state.isAdmin?'readonly':''} 
-                        class="bg-transparent text-2xl font-black text-white text-center w-full outline-none mb-8 placeholder:text-zinc-800">
+                        class="bg-transparent text-3xl font-black text-white text-center w-full outline-none mb-8 placeholder:text-zinc-800">
                     
                     <div class="flex justify-center gap-4">
-                        <div class="bg-black/40 px-5 py-4 rounded-2xl border border-white/5 min-w-[70px]">
-                            <span class="text-[7px] font-black text-zinc-500 uppercase block mb-1">Goals</span>
-                            <input type="number" value="${rd.gf}" onchange="updatePOTR('gf', this.value)" ${!window.state.isAdmin?'readonly':''} class="bg-transparent w-full text-center font-black text-xl text-emerald-500 outline-none">
+                        <div class="bg-black/40 px-6 py-5 rounded-[1.5rem] border border-white/5 min-w-[80px]">
+                            <span class="text-[8px] font-black text-zinc-500 uppercase block mb-1">Goals</span>
+                            <input type="number" value="${rd.gf}" onchange="updatePOTR('gf', this.value)" ${!window.state.isAdmin?'readonly':''} class="bg-transparent w-full text-center font-black text-2xl text-emerald-500 outline-none">
                         </div>
-                        <div class="bg-black/40 px-5 py-4 rounded-2xl border border-white/5 min-w-[70px]">
-                            <span class="text-[7px] font-black text-zinc-500 uppercase block mb-1">Conceded</span>
-                            <input type="number" value="${rd.ga}" onchange="updatePOTR('ga', this.value)" ${!window.state.isAdmin?'readonly':''} class="bg-transparent w-full text-center font-black text-xl text-red-500 outline-none">
+                        <div class="bg-black/40 px-6 py-5 rounded-[1.5rem] border border-white/5 min-w-[80px]">
+                            <span class="text-[8px] font-black text-zinc-500 uppercase block mb-1">Conceded</span>
+                            <input type="number" value="${rd.ga}" onchange="updatePOTR('ga', this.value)" ${!window.state.isAdmin?'readonly':''} class="bg-transparent w-full text-center font-black text-2xl text-red-500 outline-none">
                         </div>
                     </div>
                 </div>
@@ -274,7 +280,7 @@
 
         const renderKnockout = (container) => {
             const stages = [{ id: 'playoffs', label: 'Play-offs' }, { id: 'r16', label: 'Round of 16' }, { id: 'qf', label: 'Quarter Final' }, { id: 'sf', label: 'Semi Final' }, { id: 'final', label: 'Final' }];
-            container.innerHTML = `<div class="space-y-10">${stages.map(s => `
+            container.innerHTML = `<div class="space-y-10 pb-10">${stages.map(s => `
                 <div class="space-y-4">
                     <h3 class="text-[10px] font-black uppercase text-blue-500 tracking-[0.3em] pl-4 border-l-2 border-blue-600">${s.label}</h3>
                     <div class="grid gap-3">${renderKOList(s.id)}</div>
@@ -285,21 +291,30 @@
         const renderKOList = (stageId) => {
             const matches = window.state.knockout[stageId] || [];
             if (matches.length === 0) return `<p class="text-[9px] opacity-20 px-4 italic">To Be Announced</p>`;
-            return matches.map((m, idx) => `
+            return matches.map((m, idx) => {
+                let s1Color = 'text-zinc-400';
+                let s2Color = 'text-zinc-400';
+                if (m.s1 !== null && m.s2 !== null) {
+                    if (m.s1 > m.s2) { s1Color = 'text-emerald-500'; s2Color = 'text-red-500'; }
+                    else if (m.s2 > m.s1) { s2Color = 'text-emerald-500'; s1Color = 'text-red-500'; }
+                    else { s1Color = 'text-yellow-500'; s2Color = 'text-yellow-500'; }
+                }
+
+                return `
                 <div class="bg-zinc-900/60 p-4 rounded-3xl border border-white/5 flex items-center justify-between gap-4">
                     <div class="flex-1 space-y-2">
-                        <input type="text" value="${m.t1 || ''}" onchange="updateKOMatch('${stageId}', ${idx}, 't1', this.value)" ${!window.state.isAdmin?'readonly':''} class="w-full bg-transparent text-xs font-bold outline-none placeholder:text-zinc-800 ${m.s1 > m.s2 ? 'text-white' : 'text-zinc-400'}" placeholder="Team 1">
-                        <input type="text" value="${m.t2 || ''}" onchange="updateKOMatch('${stageId}', ${idx}, 't2', this.value)" ${!window.state.isAdmin?'readonly':''} class="w-full bg-transparent text-xs font-bold outline-none placeholder:text-zinc-800 ${m.s2 > m.s1 ? 'text-white' : 'text-zinc-400'}" placeholder="Team 2">
+                        <input type="text" value="${m.t1 || ''}" onchange="updateKOMatch('${stageId}', ${idx}, 't1', this.value)" ${!window.state.isAdmin?'readonly':''} class="w-full bg-transparent text-sm font-bold outline-none placeholder:text-zinc-800 ${s1Color}" placeholder="Team 1">
+                        <input type="text" value="${m.t2 || ''}" onchange="updateKOMatch('${stageId}', ${idx}, 't2', this.value)" ${!window.state.isAdmin?'readonly':''} class="w-full bg-transparent text-sm font-bold outline-none placeholder:text-zinc-800 ${s2Color}" placeholder="Team 2">
                     </div>
                     <div class="flex flex-col gap-2">
-                        <input type="number" value="${m.s1 ?? ''}" onchange="updateKOMatch('${stageId}', ${idx}, 's1', this.value)" ${!window.state.isAdmin?'readonly':''} class="w-8 h-7 bg-black rounded-lg text-center text-xs font-black border border-white/5 outline-none">
-                        <input type="number" value="${m.s2 ?? ''}" onchange="updateKOMatch('${stageId}', ${idx}, 's2', this.value)" ${!window.state.isAdmin?'readonly':''} class="w-8 h-7 bg-black rounded-lg text-center text-xs font-black border border-white/5 outline-none">
+                        <input type="number" value="${m.s1 ?? ''}" onchange="updateKOMatch('${stageId}', ${idx}, 's1', this.value)" ${!window.state.isAdmin?'readonly':''} class="w-10 h-8 bg-black rounded-lg text-center text-sm font-black border border-white/5 outline-none ${s1Color}">
+                        <input type="number" value="${m.s2 ?? ''}" onchange="updateKOMatch('${stageId}', ${idx}, 's2', this.value)" ${!window.state.isAdmin?'readonly':''} class="w-10 h-8 bg-black rounded-lg text-center text-sm font-black border border-white/5 outline-none ${s2Color}">
                     </div>
                     ${window.state.isAdmin ? `<button onclick="deleteKOMatch('${stageId}', ${idx})" class="text-red-500/20 hover:text-red-500 px-2 text-lg transition-colors">×</button>` : ''}
-                </div>`).join('');
+                </div>`;
+            }).join('');
         };
 
-        // Logic Functions
         window.updateTeamName = (id, name) => { window.state.teams[id].name = name; saveToCloud(); refreshUI(); };
         window.generateFixtures = () => {
             const activeTeams = window.state.teams.filter(t => t.name.trim() !== "");
@@ -341,11 +356,71 @@
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.3); border-radius: 10px; }
-        .glass-nav { background: rgba(10, 10, 20, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-top: 1px solid rgba(255, 255, 255, 0.05); }
+        
+        .floating-nav-container {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            z-index: 100;
+        }
+        
+        .floating-nav {
+            background: rgba(15, 15, 25, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 2.5rem;
+            height: 76px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 12px;
+        }
+
+        /* Result Bubble Styles */
+        .result-bubble {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 60px;
+            background: #0088cc; /* Telegram Blue */
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(0, 136, 204, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            z-index: 150;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: float 3s ease-in-out infinite;
+            text-decoration: none;
+        }
+
+        .result-bubble:hover {
+            scale: 1.1;
+            box-shadow: 0 15px 30px rgba(0, 136, 204, 0.6);
+        }
+
+        .result-bubble:active {
+            scale: 0.9;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(-50%) translateX(0); }
+            50% { transform: translateY(-55%) translateX(-5px); }
+        }
+
         input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
     </style>
 </head>
-<body class="max-w-md mx-auto min-h-screen border-x border-white/5 relative bg-[radial-gradient(circle_at_50%_-10%,rgba(59,130,246,0.15),transparent_60%)]">
+<body class="max-w-md mx-auto min-h-screen border-x border-white/5 relative bg-[radial-gradient(circle_at_50%_-10%,rgba(59,130,246,0.15),transparent_60%)] pb-32">
     
     <div class="px-6 py-6 flex justify-between items-center">
         <div class="text-[9px] font-black text-blue-500/60 uppercase tracking-[0.3em]">Official Dashboard</div>
@@ -357,14 +432,22 @@
         <p class="text-[9px] font-black text-zinc-500 uppercase tracking-[0.3em]">League Season 1 • 48 Manager Edition</p>
     </header>
 
-    <main id="content" class="px-4 pb-32"></main>
+    <main id="content" class="px-4"></main>
 
-    <nav class="fixed bottom-6 left-6 right-6 h-18 glass-nav rounded-[2rem] flex items-center px-4 z-50 border border-white/10 shadow-2xl">
-        <div id="nav-bar" class="flex w-full items-center justify-around"></div>
-    </nav>
+    <!-- Floating Result Bubble (Telegram) -->
+    <a href="https://t.me/agust_nadi" target="_blank" class="result-bubble">
+        <svg viewBox="0 0 24 24" class="w-6 h-6 text-white mb-0.5" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .33z"/>
+        </svg>
+        <span class="text-[7px] font-black text-white uppercase tracking-tighter">Result</span>
+    </a>
 
-    <div id="loader" class="fixed inset-0 bg-black z-[100] flex items-center justify-center">
-        <div class="w-10 h-10 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+    <div class="floating-nav-container">
+        <nav id="nav-bar" class="floating-nav"></nav>
+    </div>
+
+    <div id="loader" class="fixed inset-0 bg-black z-[200] flex items-center justify-center">
+        <div class="w-12 h-12 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
     </div>
 
 </body>
