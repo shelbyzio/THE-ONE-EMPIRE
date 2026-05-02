@@ -136,13 +136,8 @@
                         <thead>
                             <tr class="text-[8px] uppercase font-black text-zinc-500 border-b border-white/5 bg-white/[0.02]">
                                 <th class="p-5 pl-8">Pos Manager</th>
-                                <th class="p-5 text-center">P</th>
-                                <th class="p-5 text-center">W</th>
-                                <th class="p-5 text-center">D</th>
-                                <th class="p-5 text-center">L</th>
-                                <th class="p-5 text-center">GF</th>
-                                <th class="p-5 text-center">GA</th>
-                                <th class="p-5 text-center">GD</th>
+                                <th class="p-5 text-center">P</th><th class="p-5 text-center">W</th><th class="p-5 text-center">D</th><th class="p-5 text-center">L</th>
+                                <th class="p-5 text-center">GF</th><th class="p-5 text-center">GA</th><th class="p-5 text-center">GD</th>
                                 <th class="p-5 text-center text-blue-500">Pts</th>
                             </tr>
                         </thead>
@@ -182,7 +177,6 @@
                             <h3 class="text-[11px] font-black uppercase text-blue-500 tracking-widest">Registration (48 Slots)</h3>
                             <span class="text-[10px] font-bold text-zinc-500">${window.state.teams.filter(t => t.name.trim() !== "").length} / 48</span>
                         </div>
-                        
                         <div class="grid grid-cols-1 gap-2 max-h-[60vh] overflow-y-auto pr-2 custom-scroll">
                             ${window.state.teams.map(t => `
                             <div class="flex items-center gap-3 bg-black/40 p-2 rounded-xl border border-white/5 group hover:border-blue-500/30 transition-all">
@@ -196,12 +190,10 @@
                             </div>`).join('')}
                         </div>
                     </div>
-
                     <div class="grid grid-cols-2 gap-4">
                         <button onclick="generateFixtures()" class="py-4 bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-blue-600/20">Generate 4 Rounds</button>
                         <button onclick="startLeague()" class="py-4 bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-all rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-emerald-600/20">Start League</button>
                     </div>
-
                     <button onclick="resetTournament()" class="w-full py-4 bg-red-600/10 hover:bg-red-600/20 text-red-500 rounded-2xl font-black text-[9px] uppercase tracking-widest border border-red-500/10 transition-all">Reset All Tournament Data</button>
                 </div>`;
         };
@@ -210,13 +202,10 @@
             if(!window.state.isLeagueStarted) { container.innerHTML = `<div class="py-20 text-center opacity-40 italic text-sm">League Phase မစတင်ရသေးပါ။ Admin Panel တွင် Start လုပ်ပါ။</div>`; return; }
             const rIdx = window.state.currentRound - 1;
             const r = window.state.rounds[rIdx] || { matches: [] };
-            
             container.innerHTML = `
                 <div class="flex items-center justify-between mb-6 bg-zinc-900/50 p-2 rounded-2xl border border-white/5">
                     <button onclick="moveRound(-1)" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 active:scale-90 transition-all">←</button>
-                    <div class="text-center">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-blue-500">Matchday ${window.state.currentRound}</span>
-                    </div>
+                    <div class="text-center"><span class="text-[10px] font-black uppercase tracking-widest text-blue-500">Matchday ${window.state.currentRound}</span></div>
                     <button onclick="moveRound(1)" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 active:scale-90 transition-all">→</button>
                 </div>
                 <div class="space-y-2">
@@ -224,16 +213,12 @@
                     ${r.matches.map((m, i) => {
                         const hT = window.state.teams.find(t => t.id === m.h) || { name: 'TBA' };
                         const aT = window.state.teams.find(t => t.id === m.a) || { name: 'TBA' };
-                        
-                        let hsColor = 'text-white';
-                        let asColor = 'text-white';
-                        
+                        let hsColor = 'text-white', asColor = 'text-white';
                         if (m.hs !== null && m.as !== null) {
                             if (m.hs > m.as) { hsColor = 'text-emerald-500'; asColor = 'text-red-500'; }
                             else if (m.as > m.hs) { asColor = 'text-emerald-500'; hsColor = 'text-red-500'; }
                             else { hsColor = 'text-yellow-500'; asColor = 'text-yellow-500'; }
                         }
-
                         return `
                         <div class="bg-zinc-900/40 p-3 rounded-2xl border border-white/5 flex items-center gap-3">
                             <div class="flex-1 text-right font-bold text-[11px] truncate text-zinc-100">${hT.name}</div>
@@ -253,36 +238,22 @@
 
         const renderPOTR = (container) => {
             const rd = window.state.potr[window.state.currentRound] || { name: 'TBA', gf: 0, ga: 0, img: '' };
-            
             container.innerHTML = `
                 <div class="bg-zinc-900/80 p-8 rounded-[3rem] border border-white/5 text-center relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
                     <p class="text-[9px] font-black text-blue-500 uppercase tracking-[0.3em] mb-8">Matchday ${window.state.currentRound} MVP</p>
-                    
                     <div class="relative w-44 h-44 mx-auto mb-8">
                         <div class="w-full h-full rounded-full bg-blue-600/5 border-2 border-white/5 overflow-hidden flex items-center justify-center p-1">
                             <div class="w-full h-full rounded-full overflow-hidden bg-zinc-800">
                                 ${rd.img ? `<img src="${rd.img}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center text-4xl opacity-20">🏆</div>`}
                             </div>
                         </div>
-                        ${window.state.isAdmin ? `
-                            <label class="absolute bottom-1 right-1 w-12 h-12 bg-blue-600 rounded-full border-4 border-black flex items-center justify-center cursor-pointer hover:scale-110 active:scale-90 transition-all shadow-xl">
-                                <span class="text-xs">📷</span> <input type="file" class="hidden" accept="image/*" onchange="handleImageUpload(event)">
-                            </label>` : ''}
+                        ${window.state.isAdmin ? `<label class="absolute bottom-1 right-1 w-12 h-12 bg-blue-600 rounded-full border-4 border-black flex items-center justify-center cursor-pointer hover:scale-110 active:scale-90 transition-all shadow-xl"><span class="text-xs">📷</span> <input type="file" class="hidden" accept="image/*" onchange="handleImageUpload(event)"></label>` : ''}
                     </div>
-
-                    <input type="text" placeholder="Manager Name" value="${rd.name}" onchange="updatePOTR('name', this.value)" ${!window.state.isAdmin?'readonly':''} 
-                        class="bg-transparent text-3xl font-black text-white text-center w-full outline-none mb-8 placeholder:text-zinc-800">
-                    
+                    <input type="text" placeholder="Manager Name" value="${rd.name}" onchange="updatePOTR('name', this.value)" ${!window.state.isAdmin?'readonly':''} class="bg-transparent text-3xl font-black text-white text-center w-full outline-none mb-8 placeholder:text-zinc-800">
                     <div class="flex justify-center gap-4">
-                        <div class="bg-black/40 px-6 py-5 rounded-[1.5rem] border border-white/5 min-w-[80px]">
-                            <span class="text-[8px] font-black text-zinc-500 uppercase block mb-1">Goals</span>
-                            <input type="number" value="${rd.gf}" onchange="updatePOTR('gf', this.value)" ${!window.state.isAdmin?'readonly':''} class="bg-transparent w-full text-center font-black text-2xl text-emerald-500 outline-none">
-                        </div>
-                        <div class="bg-black/40 px-6 py-5 rounded-[1.5rem] border border-white/5 min-w-[80px]">
-                            <span class="text-[8px] font-black text-zinc-500 uppercase block mb-1">Conceded</span>
-                            <input type="number" value="${rd.ga}" onchange="updatePOTR('ga', this.value)" ${!window.state.isAdmin?'readonly':''} class="bg-transparent w-full text-center font-black text-2xl text-red-500 outline-none">
-                        </div>
+                        <div class="bg-black/40 px-6 py-5 rounded-[1.5rem] border border-white/5 min-w-[80px]"><span class="text-[8px] font-black text-zinc-500 uppercase block mb-1">Goals</span><input type="number" value="${rd.gf}" onchange="updatePOTR('gf', this.value)" ${!window.state.isAdmin?'readonly':''} class="bg-transparent w-full text-center font-black text-2xl text-emerald-500 outline-none"></div>
+                        <div class="bg-black/40 px-6 py-5 rounded-[1.5rem] border border-white/5 min-w-[80px]"><span class="text-[8px] font-black text-zinc-500 uppercase block mb-1">Conceded</span><input type="number" value="${rd.ga}" onchange="updatePOTR('ga', this.value)" ${!window.state.isAdmin?'readonly':''} class="bg-transparent w-full text-center font-black text-2xl text-red-500 outline-none"></div>
                     </div>
                 </div>
             `;
@@ -302,14 +273,12 @@
             const matches = window.state.knockout[stageId] || [];
             if (matches.length === 0) return `<p class="text-[9px] opacity-20 px-4 italic">To Be Announced</p>`;
             return matches.map((m, idx) => {
-                let s1Color = 'text-white';
-                let s2Color = 'text-white';
+                let s1Color = 'text-white', s2Color = 'text-white';
                 if (m.s1 !== null && m.s2 !== null) {
                     if (m.s1 > m.s2) { s1Color = 'text-emerald-500'; s2Color = 'text-red-500'; }
                     else if (m.s2 > m.s1) { s2Color = 'text-emerald-500'; s1Color = 'text-red-500'; }
                     else { s1Color = 'text-yellow-500'; s2Color = 'text-yellow-500'; }
                 }
-
                 return `
                 <div class="bg-zinc-900/60 p-4 rounded-3xl border border-white/5 flex items-center justify-between gap-4">
                     <div class="flex-1 space-y-2">
@@ -330,10 +299,8 @@
             const activeTeams = window.state.teams.filter(t => t.name.trim() !== "");
             if (activeTeams.length < 2) return alert("Manager အနည်းဆုံး ၂ ဦး လိုအပ်ပါသည်");
             if (!confirm(`လက်ရှိစာရင်းသွင်းထားသူ ${activeTeams.length} ဦးအတွက် Round 4 အထိ Fixtures များ Generate လုပ်မလား?`)) return;
-
             window.state.rounds = Array.from({length: 4}, (_, i) => ({ round: i + 1, matches: [] }));
             const teamIds = activeTeams.map(t => t.id);
-
             for (let r = 0; r < 4; r++) {
                 let shuffled = [...teamIds].sort(() => Math.random() - 0.5);
                 for (let i = 0; i < shuffled.length - 1; i += 2) {
@@ -358,44 +325,65 @@
         window.logoutAdmin = () => { window.state.isAdmin = false; refreshUI(); };
         window.renderHeader = () => { document.getElementById('admin-status').innerHTML = window.state.isAdmin ? `<button onclick="logoutAdmin()" class="px-3 py-1 bg-blue-600/10 text-blue-500 text-[8px] font-black rounded-full border border-blue-500/20 uppercase">Admin Mode</button>` : `<button onclick="adminLogin()" class="px-3 py-1 bg-white/5 text-zinc-500 text-[8px] font-black rounded-full uppercase">Login</button>`; };
 
-        window.onload = refreshUI;
+        // Draggable Logic
+        const initDraggable = () => {
+            const dragEl = document.getElementById('draggable-result');
+            let isDragging = false, currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
+
+            const dragStart = (e) => {
+                if (e.type === "touchstart") {
+                    initialX = e.touches[0].clientX - xOffset;
+                    initialY = e.touches[0].clientY - yOffset;
+                } else {
+                    initialX = e.clientX - xOffset;
+                    initialY = e.clientY - yOffset;
+                }
+                if (e.target === dragEl || dragEl.contains(e.target)) isDragging = true;
+            };
+
+            const dragEnd = () => { initialX = currentX; initialY = currentY; isDragging = false; };
+
+            const drag = (e) => {
+                if (isDragging) {
+                    e.preventDefault();
+                    if (e.type === "touchmove") {
+                        currentX = e.touches[0].clientX - initialX;
+                        currentY = e.touches[0].clientY - initialY;
+                    } else {
+                        currentX = e.clientX - initialX;
+                        currentY = e.clientY - initialY;
+                    }
+                    xOffset = currentX; yOffset = currentY;
+                    setTranslate(currentX, currentY, dragEl);
+                }
+            };
+
+            const setTranslate = (xPos, yPos, el) => { el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`; };
+
+            document.addEventListener("mousedown", dragStart, false);
+            document.addEventListener("mouseup", dragEnd, false);
+            document.addEventListener("mousemove", drag, false);
+            document.addEventListener("touchstart", dragStart, {passive: false});
+            document.addEventListener("touchend", dragEnd, false);
+            document.addEventListener("touchmove", drag, {passive: false});
+        };
+
+        window.onload = () => { refreshUI(); initDraggable(); };
     </script>
     <style>
-        body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+        body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; touch-action: pan-y; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.3); border-radius: 10px; }
         
-        .floating-nav-container {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 400px;
-            z-index: 100;
-        }
-        
-        .floating-nav {
-            background: rgba(15, 15, 25, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 2.5rem;
-            height: 76px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            padding: 0 12px;
-        }
+        .floating-nav-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 100; }
+        .floating-nav { background: rgba(15, 15, 25, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 2.5rem; height: 76px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 12px; }
 
         .result-bubble {
             position: fixed;
             right: 20px;
             top: 50%;
-            transform: translateY(-50%);
             width: 60px;
             height: 60px;
             background: #0088cc;
@@ -405,20 +393,15 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 10px 25px rgba(0, 136, 204, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.05);
-            cursor: pointer;
+            cursor: grab;
             z-index: 150;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            animation: float 3s ease-in-out infinite;
-            text-decoration: none;
+            user-select: none;
+            touch-action: none;
         }
+        .result-bubble:active { cursor: grabbing; scale: 0.95; }
 
-        .result-bubble:hover { scale: 1.1; box-shadow: 0 15px 30px rgba(0, 136, 204, 0.6); }
-        .result-bubble:active { scale: 0.9; }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(-50%) translateX(0); }
-            50% { transform: translateY(-55%) translateX(-5px); }
-        }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 10px 25px rgba(0, 136, 204, 0.4); } 50% { box-shadow: 0 10px 35px rgba(0, 136, 204, 0.7); } }
+        .result-bubble { animation: pulse 2s infinite; }
 
         input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
     </style>
@@ -437,13 +420,13 @@
 
     <main id="content" class="px-4"></main>
 
-    <!-- Floating Result Bubble (Telegram) -->
-    <a href="https://t.me/agust_nadi" target="_blank" class="result-bubble">
+    <!-- Draggable Floating Result Bubble -->
+    <div id="draggable-result" class="result-bubble" onclick="if(!isDragging) window.open('https://t.me/agust_nadi', '_blank')">
         <svg viewBox="0 0 24 24" class="w-6 h-6 text-white mb-0.5" fill="currentColor">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .33z"/>
         </svg>
         <span class="text-[7px] font-black text-white uppercase tracking-tighter">Result</span>
-    </a>
+    </div>
 
     <div class="floating-nav-container">
         <nav id="nav-bar" class="floating-nav"></nav>
