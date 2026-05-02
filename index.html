@@ -132,12 +132,18 @@
 
             container.innerHTML = `
                 <div class="bg-zinc-900/40 rounded-[2rem] border border-white/5 overflow-hidden overflow-x-auto no-scrollbar">
-                    <table class="w-full text-left min-w-[500px]">
+                    <table class="w-full text-left min-w-[650px]">
                         <thead>
                             <tr class="text-[8px] uppercase font-black text-zinc-500 border-b border-white/5 bg-white/[0.02]">
                                 <th class="p-5 pl-8">Pos Manager</th>
-                                <th class="p-5 text-center">P</th><th class="p-5 text-center">W</th><th class="p-5 text-center">D</th>
-                                <th class="p-5 text-center">L</th><th class="p-5 text-center text-blue-500">Pts</th>
+                                <th class="p-5 text-center">P</th>
+                                <th class="p-5 text-center">W</th>
+                                <th class="p-5 text-center">D</th>
+                                <th class="p-5 text-center">L</th>
+                                <th class="p-5 text-center">GF</th>
+                                <th class="p-5 text-center">GA</th>
+                                <th class="p-5 text-center">GD</th>
+                                <th class="p-5 text-center text-blue-500">Pts</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -151,6 +157,9 @@
                                     <td class="p-4 text-center text-zinc-400 text-[11px]">${s.w}</td>
                                     <td class="p-4 text-center text-zinc-400 text-[11px]">${s.d}</td>
                                     <td class="p-4 text-center text-zinc-400 text-[11px]">${s.l}</td>
+                                    <td class="p-4 text-center text-zinc-400 text-[11px]">${s.gf}</td>
+                                    <td class="p-4 text-center text-zinc-400 text-[11px]">${s.ga}</td>
+                                    <td class="p-4 text-center font-bold text-[11px] ${s.gd > 0 ? 'text-emerald-500' : (s.gd < 0 ? 'text-red-500' : 'text-zinc-500')}">${s.gd > 0 ? '+' + s.gd : s.gd}</td>
                                     <td class="p-4 text-center font-black text-blue-500 text-base">${s.pts}</td>
                                 </tr>`).join('')}
                         </tbody>
