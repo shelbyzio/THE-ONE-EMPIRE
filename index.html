@@ -216,25 +216,26 @@
                         const hT = window.state.teams.find(t => t.id === m.h) || { name: 'TBA' };
                         const aT = window.state.teams.find(t => t.id === m.a) || { name: 'TBA' };
                         
-                        let hColor = 'text-white';
-                        let aColor = 'text-white';
+                        let hsColor = 'text-white';
+                        let asColor = 'text-white';
+                        
                         if (m.hs !== null && m.as !== null) {
-                            if (m.hs > m.as) { hColor = 'text-emerald-500'; aColor = 'text-red-500'; }
-                            else if (m.as > m.hs) { aColor = 'text-emerald-500'; hColor = 'text-red-500'; }
-                            else { hColor = 'text-yellow-500'; aColor = 'text-yellow-500'; }
+                            if (m.hs > m.as) { hsColor = 'text-emerald-500'; asColor = 'text-red-500'; }
+                            else if (m.as > m.hs) { asColor = 'text-emerald-500'; hsColor = 'text-red-500'; }
+                            else { hsColor = 'text-yellow-500'; asColor = 'text-yellow-500'; }
                         }
 
                         return `
                         <div class="bg-zinc-900/40 p-3 rounded-2xl border border-white/5 flex items-center gap-3">
-                            <div class="flex-1 text-right font-bold text-[11px] truncate ${hColor}">${hT.name}</div>
+                            <div class="flex-1 text-right font-bold text-[11px] truncate text-zinc-100">${hT.name}</div>
                             <div class="flex gap-1.5 items-center">
                                 <input type="number" value="${m.hs ?? ''}" onchange="updateScore(${rIdx}, ${i}, 'hs', this.value)" ${!window.state.isAdmin?'readonly':''} 
-                                    class="w-8 h-8 bg-black rounded-lg text-center font-black border border-white/10 outline-none ${hColor}">
+                                    class="w-8 h-8 bg-black rounded-lg text-center font-black border border-white/10 outline-none ${hsColor}">
                                 <span class="opacity-10 text-[6px] font-black">VS</span>
                                 <input type="number" value="${m.as ?? ''}" onchange="updateScore(${rIdx}, ${i}, 'as', this.value)" ${!window.state.isAdmin?'readonly':''} 
-                                    class="w-8 h-8 bg-black rounded-lg text-center font-black border border-white/10 outline-none ${aColor}">
+                                    class="w-8 h-8 bg-black rounded-lg text-center font-black border border-white/10 outline-none ${asColor}">
                             </div>
-                            <div class="flex-1 text-left font-bold text-[11px] truncate ${aColor}">${aT.name}</div>
+                            <div class="flex-1 text-left font-bold text-[11px] truncate text-zinc-100">${aT.name}</div>
                         </div>`;
                     }).join('')}
                 </div>
@@ -292,8 +293,8 @@
             const matches = window.state.knockout[stageId] || [];
             if (matches.length === 0) return `<p class="text-[9px] opacity-20 px-4 italic">To Be Announced</p>`;
             return matches.map((m, idx) => {
-                let s1Color = 'text-zinc-400';
-                let s2Color = 'text-zinc-400';
+                let s1Color = 'text-white';
+                let s2Color = 'text-white';
                 if (m.s1 !== null && m.s2 !== null) {
                     if (m.s1 > m.s2) { s1Color = 'text-emerald-500'; s2Color = 'text-red-500'; }
                     else if (m.s2 > m.s1) { s2Color = 'text-emerald-500'; s1Color = 'text-red-500'; }
@@ -303,8 +304,8 @@
                 return `
                 <div class="bg-zinc-900/60 p-4 rounded-3xl border border-white/5 flex items-center justify-between gap-4">
                     <div class="flex-1 space-y-2">
-                        <input type="text" value="${m.t1 || ''}" onchange="updateKOMatch('${stageId}', ${idx}, 't1', this.value)" ${!window.state.isAdmin?'readonly':''} class="w-full bg-transparent text-sm font-bold outline-none placeholder:text-zinc-800 ${s1Color}" placeholder="Team 1">
-                        <input type="text" value="${m.t2 || ''}" onchange="updateKOMatch('${stageId}', ${idx}, 't2', this.value)" ${!window.state.isAdmin?'readonly':''} class="w-full bg-transparent text-sm font-bold outline-none placeholder:text-zinc-800 ${s2Color}" placeholder="Team 2">
+                        <input type="text" value="${m.t1 || ''}" onchange="updateKOMatch('${stageId}', ${idx}, 't1', this.value)" ${!window.state.isAdmin?'readonly':''} class="w-full bg-transparent text-sm font-bold outline-none placeholder:text-zinc-800 text-zinc-100" placeholder="Team 1">
+                        <input type="text" value="${m.t2 || ''}" onchange="updateKOMatch('${stageId}', ${idx}, 't2', this.value)" ${!window.state.isAdmin?'readonly':''} class="w-full bg-transparent text-sm font-bold outline-none placeholder:text-zinc-800 text-zinc-100" placeholder="Team 2">
                     </div>
                     <div class="flex flex-col gap-2">
                         <input type="number" value="${m.s1 ?? ''}" onchange="updateKOMatch('${stageId}', ${idx}, 's1', this.value)" ${!window.state.isAdmin?'readonly':''} class="w-10 h-8 bg-black rounded-lg text-center text-sm font-black border border-white/5 outline-none ${s1Color}">
@@ -381,7 +382,6 @@
             padding: 0 12px;
         }
 
-        /* Result Bubble Styles */
         .result-bubble {
             position: fixed;
             right: 20px;
@@ -389,7 +389,7 @@
             transform: translateY(-50%);
             width: 60px;
             height: 60px;
-            background: #0088cc; /* Telegram Blue */
+            background: #0088cc;
             border-radius: 50%;
             display: flex;
             flex-direction: column;
@@ -403,14 +403,8 @@
             text-decoration: none;
         }
 
-        .result-bubble:hover {
-            scale: 1.1;
-            box-shadow: 0 15px 30px rgba(0, 136, 204, 0.6);
-        }
-
-        .result-bubble:active {
-            scale: 0.9;
-        }
+        .result-bubble:hover { scale: 1.1; box-shadow: 0 15px 30px rgba(0, 136, 204, 0.6); }
+        .result-bubble:active { scale: 0.9; }
 
         @keyframes float {
             0%, 100% { transform: translateY(-50%) translateX(0); }
