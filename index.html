@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meta Master League Season 1</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;600;700;800&display=swap" rel="stylesheet">
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
@@ -28,6 +28,7 @@
 
         const initialTeams = Array.from({length: 48}, (_, i) => ({ id: i, name: "" }));
 
+        // Window state initialization including custom alert/confirm modal state
         window.state = {
             isAdmin: false,
             user: null,
@@ -37,7 +38,14 @@
             currentRound: 1,
             activeTab: 'standing',
             isLeagueStarted: false,
-            potr: {} 
+            potr: {},
+            modal: {
+                isOpen: false,
+                title: "",
+                message: "",
+                onConfirm: null,
+                showCancel: true
+            }
         };
 
         const getTournamentDoc = () => doc(db, 'tournaments', appId);
@@ -79,6 +87,23 @@
 
         startSync();
 
+        // Beautiful In-App Custom Modal replaces native alert() and confirm()
+        window.showModal = (title, message, onConfirm, showCancel = true) => {
+            window.state.modal = {
+                isOpen: true,
+                title,
+                message,
+                onConfirm,
+                showCancel
+            };
+            refreshUI();
+        };
+
+        window.closeModal = () => {
+            window.state.modal.isOpen = false;
+            refreshUI();
+        };
+
         window.refreshUI = () => {
             const container = document.getElementById('content');
             renderNav();
@@ -88,6 +113,7 @@
             else if(window.state.activeTab === 'standing') renderTable(container);
             else if(window.state.activeTab === 'potr') renderPOTR(container);
             else if(window.state.activeTab === 'knockout') renderKnockout(container);
+            renderModal();
             document.getElementById('loader').style.display = 'none';
         };
 
@@ -294,38 +320,161 @@
             }).join('');
         };
 
+        const renderModal = () => {
+            const modalContainer = document.getElementById('modal-container');
+            if (!modalContainer) return;
+            const m = window.state.modal;
+            if (!m.isOpen) {
+                modalContainer.innerHTML = '';
+                return;
+            }
+
+            modalContainer.innerHTML = `
+                <div class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[250] flex items-center justify-center p-4">
+                    <div class="bg-zinc-950 border border-white/10 rounded-[2rem] p-6 w-full max-w-sm text-center shadow-2xl transition-all">
+                        <h4 class="text-sm font-black uppercase text-blue-500 tracking-wider mb-2">${m.title}</h4>
+                        <p class="text-xs text-zinc-300 font-bold mb-6 leading-relaxed">${m.message}</p>
+                        <div class="flex gap-3 justify-center">
+                            ${m.showCancel ? `
+                                <button onclick="window.closeModal()" class="flex-1 py-3 bg-zinc-900 hover:bg-zinc-800 active:scale-95 transition-all rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-400 border border-white/5">မလုပ်တော့ပါ</button>
+                            ` : ''}
+                            <button id="modal-confirm-btn" class="flex-1 py-3 bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-blue-600/20">အတည်ပြုသည်</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('modal-confirm-btn').onclick = m.onConfirm;
+        };
+
         window.updateTeamName = (id, name) => { window.state.teams[id].name = name; saveToCloud(); refreshUI(); };
+
+        // Uses the professional Circle Method (Round Robin) to generate completely unique fixtures
         window.generateFixtures = () => {
             const activeTeams = window.state.teams.filter(t => t.name.trim() !== "");
-            if (activeTeams.length < 2) return alert("Manager အနည်းဆုံး ၂ ဦး လိုအပ်ပါသည်");
-            if (!confirm(`လက်ရှိစာရင်းသွင်းထားသူ ${activeTeams.length} ဦးအတွက် Round 4 အထိ Fixtures များ Generate လုပ်မလား?`)) return;
-            window.state.rounds = Array.from({length: 4}, (_, i) => ({ round: i + 1, matches: [] }));
-            const teamIds = activeTeams.map(t => t.id);
-            for (let r = 0; r < 4; r++) {
-                let shuffled = [...teamIds].sort(() => Math.random() - 0.5);
-                for (let i = 0; i < shuffled.length - 1; i += 2) {
-                    window.state.rounds[r].matches.push({ h: shuffled[i], a: shuffled[i+1], hs: null, as: null });
-                }
+            if (activeTeams.length < 2) {
+                window.showModal("သတိပေးချက်", "Manager အနည်းဆုံး ၂ ဦး လိုအပ်ပါသည်", () => window.closeModal(), false);
+                return;
             }
-            window.state.isLeagueStarted = true;
-            saveToCloud(); refreshUI();
+
+            window.showModal(
+                "ပွဲစဉ်ဇယား ထုတ်ရန် အတည်ပြုချက်",
+                `လက်ရှိ စာရင်းသွင်းထားသူ Manager ${activeTeams.length} ဦးအတွက် အချင်းချင်း ပွဲစဉ်လုံးဝမထပ်စေဘဲ Round 4 အထိ Fixtures များ စနစ်တကျ ဖန်တီးမလား?`,
+                () => {
+                    // Reset and construct empty structure for 4 rounds
+                    window.state.rounds = Array.from({length: 4}, (_, i) => ({ round: i + 1, matches: [] }));
+
+                    // Create a randomized copy of active teams
+                    let scheduleTeams = [...activeTeams].sort(() => Math.random() - 0.5);
+                    let N = scheduleTeams.length;
+                    
+                    // If odd count, insert dummy "bye" team to run Circle Method cleanly
+                    let hasBye = N % 2 !== 0;
+                    if (hasBye) {
+                        scheduleTeams.push({ id: -1, name: "BYE" });
+                        N++;
+                    }
+
+                    // A full unique Round Robin sequence offers N - 1 total rounds. 
+                    // We only require up to 4 rounds.
+                    const maxPossibleRounds = N - 1;
+                    const roundsToCreate = Math.min(4, maxPossibleRounds);
+
+                    for (let r = 0; r < roundsToCreate; r++) {
+                        const roundMatches = [];
+                        
+                        for (let i = 0; i < N / 2; i++) {
+                            const home = scheduleTeams[i];
+                            const away = scheduleTeams[N - 1 - i];
+
+                            // Skip "BYE" matches automatically 
+                            if (home.id !== -1 && away.id !== -1) {
+                                roundMatches.push({
+                                    h: home.id,
+                                    a: away.id,
+                                    hs: null,
+                                    as: null
+                                });
+                            }
+                        }
+
+                        // Shuffle internal order of matches in the round for beautiful variance
+                        window.state.rounds[r].matches = roundMatches.sort(() => Math.random() - 0.5);
+
+                        // Circle Method Rotation: Keep first item in index 0 fixed, rotate others rightwards
+                        scheduleTeams = [
+                            scheduleTeams[0],
+                            scheduleTeams[N - 1],
+                            ...scheduleTeams.slice(1, N - 1)
+                        ];
+                    }
+
+                    window.state.isLeagueStarted = true;
+                    window.state.currentRound = 1;
+                    saveToCloud();
+                    window.closeModal();
+                    refreshUI();
+                },
+                true
+            );
         };
 
         window.updateScore = (rIdx, mIdx, side, val) => { window.state.rounds[rIdx].matches[mIdx][side] = val === "" ? null : parseInt(val); saveToCloud(); refreshUI(); };
         window.updatePOTR = (field, val) => { const cur = window.state.currentRound; if(!window.state.potr[cur]) window.state.potr[cur] = { name: '', gf: 0, ga: 0, img: '' }; window.state.potr[cur][field] = field === 'name' ? val : (val === "" ? 0 : parseInt(val)); saveToCloud(); refreshUI(); };
         window.handleImageUpload = (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (event) => { const cur = window.state.currentRound; if(!window.state.potr[cur]) window.state.potr[cur] = { name: '', gf: 0, ga: 0, img: '' }; window.state.potr[cur].img = event.target.result; saveToCloud(); refreshUI(); }; reader.readAsDataURL(file); };
         window.startLeague = () => { window.state.isLeagueStarted = true; saveToCloud(); refreshUI(); };
-        window.resetTournament = () => { if(confirm("Data အားလုံးကို ဖျက်ပစ်မလား?")) { window.state.isLeagueStarted = false; window.state.rounds = Array.from({length: 4}, (_, i) => ({ round: i + 1, matches: [] })); window.state.knockout = { playoffs: [], r16: [], qf: [], sf: [], final: [] }; window.state.potr = {}; window.state.teams = Array.from({length: 48}, (_, i) => ({ id: i, name: "" })); saveToCloud(); refreshUI(); } };
+        
+        window.resetTournament = () => {
+            window.showModal(
+                "Data အားလုံး ဖျက်ပစ်ရန် အတည်ပြုချက်",
+                "ပြိုင်ပွဲဝင် စာရင်းများ၊ ရမှတ်ဇယားများနှင့် ပွဲစဉ်ဇယားများ အားလုံးကို ဖျက်ပြီး မူလအတိုင်း ပြန်လည်စတင်ရန် သေချာပါသလား?",
+                () => {
+                    window.state.isLeagueStarted = false;
+                    window.state.rounds = Array.from({length: 4}, (_, i) => ({ round: i + 1, matches: [] }));
+                    window.state.knockout = { playoffs: [], r16: [], qf: [], sf: [], final: [] };
+                    window.state.potr = {};
+                    window.state.teams = Array.from({length: 48}, (_, i) => ({ id: i, name: "" }));
+                    saveToCloud();
+                    window.closeModal();
+                    refreshUI();
+                },
+                true
+            );
+        };
+
         window.addKOMatch = (stage) => { window.state.knockout[stage].push({ t1: '', t2: '', s1: null, s2: null }); saveToCloud(); refreshUI(); };
-        window.deleteKOMatch = (stage, idx) => { if(confirm("ဖျက်မလား?")) { window.state.knockout[stage].splice(idx, 1); saveToCloud(); refreshUI(); } };
+        
+        window.deleteKOMatch = (stage, idx) => {
+            window.showModal(
+                "ပွဲစဉ်ဖျက်ရန် အတည်ပြုချက်",
+                "ရွေးချယ်ထားသော Knockout ပွဲစဉ်ကို ဖျက်ပစ်ရန် သေချာပါသလား?",
+                () => {
+                    window.state.knockout[stage].splice(idx, 1);
+                    saveToCloud();
+                    window.closeModal();
+                    refreshUI();
+                },
+                true
+            );
+        };
+
         window.updateKOMatch = (stage, idx, field, val) => { window.state.knockout[stage][idx][field] = field.startsWith('s') ? (val === "" ? null : parseInt(val)) : val; saveToCloud(); refreshUI(); };
         window.changeTab = t => { window.state.activeTab = t; refreshUI(); };
         window.moveRound = d => { const n = window.state.currentRound + d; if(n > 0 && n <= 4) { window.state.currentRound = n; refreshUI(); } };
-        window.adminLogin = () => { if(prompt("Password?") === "1234") { window.state.isAdmin = true; refreshUI(); } };
+        
+        window.adminLogin = () => {
+            const pass = prompt("Password?");
+            if(pass === "1234") {
+                window.state.isAdmin = true;
+                refreshUI();
+            } else if (pass !== null) {
+                window.showModal("သတိပေးချက်", "မှားယွင်းသော စကားဝှက် ဖြစ်သည်", () => window.closeModal(), false);
+            }
+        };
+
         window.logoutAdmin = () => { window.state.isAdmin = false; refreshUI(); };
         window.renderHeader = () => { document.getElementById('admin-status').innerHTML = window.state.isAdmin ? `<button onclick="logoutAdmin()" class="px-3 py-1 bg-blue-600/10 text-blue-500 text-[8px] font-black rounded-full border border-blue-500/20 uppercase">Admin Mode</button>` : `<button onclick="adminLogin()" class="px-3 py-1 bg-white/5 text-zinc-500 text-[8px] font-black rounded-full uppercase">Login</button>`; };
 
-        // Draggable & Click Logic
+        // Draggable & Click Logic for Telegram floating bubble
         let isDragging = false;
         const initDraggable = () => {
             const dragEl = document.getElementById('draggable-result');
@@ -349,7 +498,7 @@
                 initialY = currentY;
                 const dragDuration = Date.now() - dragStartTime;
                 
-                // If it's a short click/touch, navigate
+                // Short tab/click detection -> Navigate securely
                 if (isDragging && dragDuration < 200) {
                    window.open('https://t.me/agust_nadi', '_blank');
                 }
@@ -447,6 +596,9 @@
     <div class="floating-nav-container">
         <nav id="nav-bar" class="floating-nav"></nav>
     </div>
+
+    <!-- Custom Modal Container -->
+    <div id="modal-container"></div>
 
     <div id="loader" class="fixed inset-0 bg-black z-[200] flex items-center justify-center">
         <div class="w-12 h-12 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
